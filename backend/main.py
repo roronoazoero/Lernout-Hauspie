@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Path
 from pydantic import BaseModel
 from typing import Optional, List
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, Date, Numeric
@@ -124,3 +124,44 @@ def create_loan(application: LoanApplicationCreate, db: Session = Depends(get_db
     db.commit()
     db.refresh(db_app)
     return db_app
+
+@app.put("/loans/{loan_id}", response_model=LoanApplicationCreate)
+def update_loan(loan_id: int, updated_data: LoanApplicationCreate, db: Session = Depends(get_db)):
+    loan = db.query(LoanApplication).filter(LoanApplication.id == loan_id).first()
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan application not found")
+    
+    for key, value in updated_data.dict().items():
+        setattr(loan, key, value)
+    
+    db.commit()
+    db.refresh(loan)
+    return loan
+
+@app.delete("/loans/{loan_id}")
+def delete_loan(loan_id: int, db: Session = Depends(get_db)):
+    loan = db.query(LoanApplication).filter(LoanApplication.id == loan_id).first()
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan application not found")
+    
+    db.delete(loan)
+    db.commit()
+    return {"message": f"Loan application {loan_id} deleted successfully"}
+
+@app.post("/calculate-rate")
+def calculate_rate(income: float, loan_amount: float, duration: int):
+    # Simplified logic example
+    base_rate = 3.5
+    risk_factor = (loan_amount / income) * 0.1
+    duration_factor = (duration / 12) * 0.05
+    interest = base_rate + risk_factor + duration_factor
+    return {"calculated_rate": round(interest, 2)}
+
+@app.get("/loans/search", response_model=List[LoanApplicationCreate])
+def search_loans(age: Optional[int] = None, name: Optional[str] = None, db: Session = Depends(get_db)):
+    query = db.query(LoanApplication)
+    if age:
+        query = query.filter(LoanApplication.age == age)
+    if name:
+        query = query.filter(LoanApplication.employmentstatus.ilike(f"%{name}%"))
+    return query.all()
