@@ -9,12 +9,12 @@ LH-mortgage-support/
 ├── backend/                # FastAPI application
 │   ├── main.py             # FastAPI entrypoint
 │   ├── requirements.txt    # Python dependencies
-│   └── .env                # Backend environment variables
+│   └── .env                # NOT AVAILABLE IN THIS REPO and pls do not push .env into repo plsplsplsplspls
 ├── frontend/               # Frontend application TBA
 │   ├── src/                # Source files
 │   ├── public/             # Static assets
 │   ├── package.json        # Node dependencies & scripts
-│   └── .env                # Frontend environment variables
+│   └── .env                # NOT AVAILABLE IN THIS REPO and pls do not push .env into repo plsplsplsplspls
 ├── .gitignore              # Global ignore rules
 └── README.md               # This file
 ```
