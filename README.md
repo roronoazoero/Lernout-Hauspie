@@ -1,6 +1,6 @@
-# Mortgage Loan Support System Prototype
+# Mortgage Loan SupportPrototype
 
-A proof-of-concept application that demonstrates a mortgage loan support chatbot powered by AI agents, backed by a PostgreSQL database and a FastAPI backend.
+A proof-of-concept application that demonstrates a mortgage loan support chatbot powered by AI agents constructed in LangFlow, backed by a PostgreSQL database and a FastAPI backend.
 
 Project Structure
 
@@ -9,12 +9,12 @@ LH-mortgage-support/
 ├── backend/                # FastAPI application
 │   ├── main.py             # FastAPI entrypoint
 │   ├── requirements.txt    # Python dependencies
-│   └── .env                # Backend environment variables
+│   └── .env                # NOT AVAILABLE IN THIS REPO and pls do not push .env into repo plsplsplsplspls
 ├── frontend/               # Frontend application TBA
 │   ├── src/                # Source files
 │   ├── public/             # Static assets
 │   ├── package.json        # Node dependencies & scripts
-│   └── .env                # Frontend environment variables
+│   └── .env                # NOT AVAILABLE IN THIS REPO and pls do not push .env into repo plsplsplsplspls
 ├── .gitignore              # Global ignore rules
 └── README.md               # This file
 ```
@@ -39,7 +39,7 @@ ZZZ ill write later
 
 ### 2. Database Hosting: Supabase
 
-### 3. Backend (FastAPI hosted by Render)
+### 3. Backend
 ### API Endpoints
 
 * **GET** `/loans`
@@ -58,7 +58,7 @@ ZZZ ill write later
 ### Deployment
 
 ### Backend
-
+* **Supabase**: For SQL DB
 * **Render**: For FastAPI documentation
 * **Google Cloud**: For docker containerization and deploying
 
