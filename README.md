@@ -39,7 +39,7 @@ ZZZ ill write later
 
 ### 2. Database Hosting: Supabase
 
-### 3. Backend (FastAPI hosted by Render)
+### 3. Backend
 ### API Endpoints
 
 * **GET** `/loans`
@@ -58,7 +58,7 @@ ZZZ ill write later
 ### Deployment
 
 ### Backend
-
+* **Supabase**: For SQL DB
 * **Render**: For FastAPI documentation
 * **Google Cloud**: For docker containerization and deploying
 
