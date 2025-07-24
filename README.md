@@ -1,6 +1,6 @@
-# Mortgage Loan Support System Prototype
+# Mortgage Loan SupportPrototype
 
-A proof-of-concept application that demonstrates a mortgage loan support chatbot powered by AI agents, backed by a PostgreSQL database and a FastAPI backend.
+A proof-of-concept application that demonstrates a mortgage loan support chatbot powered by AI agents constructed in LangFlow, backed by a PostgreSQL database and a FastAPI backend.
 
 Project Structure
 
