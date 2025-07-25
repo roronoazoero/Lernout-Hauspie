@@ -165,3 +165,11 @@ def search_loans(age: Optional[int] = None, name: Optional[str] = None, db: Sess
     if name:
         query = query.filter(LoanApplication.employmentstatus.ilike(f"%{name}%"))
     return query.all()
+
+    
+@app.get("/loans/search/{loan_id}", response_model=LoanApplicationCreate)
+def search_loan_by_id(loan_id: int, db: Session = Depends(get_db)):
+    loan = db.query(LoanApplication).filter(LoanApplication.id == loan_id).first()
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan not found")
+    return loan
