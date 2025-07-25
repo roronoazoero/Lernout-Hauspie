@@ -157,19 +157,28 @@ def delete_loan(loan_id: int, db: Session = Depends(get_db)):
 #     interest = base_rate + risk_factor + duration_factor
 #     return {"calculated_rate": round(interest, 2)}
 
-@app.get("/loans/search", response_model=List[LoanApplicationCreate])
-def search_loans(age: Optional[int] = None, name: Optional[str] = None, db: Session = Depends(get_db)):
-    query = db.query(LoanApplication)
-    if age:
-        query = query.filter(LoanApplication.age == age)
-    if name:
-        query = query.filter(LoanApplication.employmentstatus.ilike(f"%{name}%"))
-    return query.all()
+from fastapi import Query
 
-    
-@app.get("/loans/search/{loan_id}", response_model=LoanApplicationCreate)
-def search_loan_by_id(loan_id: int, db: Session = Depends(get_db)):
-    loan = db.query(LoanApplication).filter(LoanApplication.id == loan_id).first()
-    if not loan:
-        raise HTTPException(status_code=404, detail="Loan not found")
-    return loan
+@app.get("/loans/search", response_model=List[LoanApplicationCreate])
+def search_loans(
+    age: Optional[int] = None,
+    loanamount: Optional[float] = Query(None, description="Exact loan amount"),
+    creditscore: Optional[float] = Query(None, description="Exact credit score"),
+    employmentstatus: Optional[str] = Query(None, description="Partial match"),
+    loanapproved: Optional[bool] = Query(None, description="Whether the loan was approved"),
+    db: Session = Depends(get_db),
+):
+    query = db.query(LoanApplication)
+
+    if age is not None:
+        query = query.filter(LoanApplication.age == age)
+    if loanamount is not None:
+        query = query.filter(LoanApplication.loanamount == loanamount)
+    if creditscore is not None:
+        query = query.filter(LoanApplication.creditscore == creditscore)
+    if employmentstatus is not None:
+        query = query.filter(LoanApplication.employmentstatus.ilike(f"%{employmentstatus}%"))
+    if loanapproved is not None:
+        query = query.filter(LoanApplication.loanapproved == loanapproved)
+
+    return query.all()
