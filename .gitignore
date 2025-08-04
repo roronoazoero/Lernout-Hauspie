@@ -1,13 +1,21 @@
+# ─── General Python ─────────────────────────────────────────
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
+
+# ─── Backend ────────────────────────────────────────────────
 backend/.env
 backend/fastapi-env/
 backend/__pycache__/
 
+# ─── Frontend ───────────────────────────────────────────────
 frontend/.env
-# Logs
-logs
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+
+# ─── Logs ───────────────────────────────────────────────────
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -15,15 +23,13 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# ─── Local Environment Files ────────────────────────────────
 *.local
 
-# Editor directories and files
-.vscode/*
+# ─── Editor/IDE Files ───────────────────────────────────────
+.vscode/
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
@@ -31,5 +37,8 @@ dist-ssr
 *.sln
 *.sw?
 
-.config/
-!.env
+# ─── Builder.io Files (if using Builder) ────────────────────
+frontend/.builder/
+frontend/*.builder.json
+frontend/*.builder.mdc
+frontend/*.builder.dev.js

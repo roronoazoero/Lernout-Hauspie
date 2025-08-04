@@ -10,6 +10,7 @@ import UploadDocuments from "../components/UploadDocuments";
 import ApplicationSuccess from "../components/ApplicationSuccess";
 import ApplicationStatus from "../components/ApplicationStatus";
 import EditDetails from "../components/EditDetails";
+import "../builder";
 import {
   MortgageInputs,
   MortgageResults as ResultsType,
