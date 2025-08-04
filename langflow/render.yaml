@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: langflow-agent
+    env: docker
+    region: singapore
+    plan: free
+    dockerfilePath: langflow/Dockerfile
+    buildCommand: ""
+    startCommand: ""
+    autoDeploy: true

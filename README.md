@@ -60,7 +60,6 @@ ZZZ ill write later
 ### Backend
 * **Supabase**: For SQL DB
 * **Render**: For FastAPI documentation
-* **Google Cloud**: For docker containerization and deploying
 
 ### Frontend
 

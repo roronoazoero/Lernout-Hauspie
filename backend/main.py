@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, Path
+from fastapi import FastAPI, HTTPException, Depends, Path, Request
 from pydantic import BaseModel
 from typing import Optional, List
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, Date, Numeric
@@ -182,3 +182,29 @@ def search_loans(
         query = query.filter(LoanApplication.loanapproved == loanapproved)
 
     return query.all()
+
+@app.post("/agent")
+async def agent_proxy(request: Request):
+    body = await request.json()
+    user_input = body.get("input")
+
+    payload = {
+        "output_type": "chat",
+        "input_type": "chat",
+        "input_value": user_input,
+        "session_id": "user_1"
+    }
+
+    langflow_url = os.getenv("LANGFLOW_URL")  # e.g., http://localhost:7860/api/v1/run/<flow_id>
+    api_key = os.getenv("LANGFLOW_API_KEY")
+
+    response = requests.post(
+        langflow_url,
+        headers={
+            "Content-Type": "application/json",
+            "x-api-key": api_key
+        },
+        json=payload
+    )
+
+    return response.json()
