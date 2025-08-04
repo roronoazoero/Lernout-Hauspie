@@ -85,7 +85,7 @@ export const ChatAgent = () => {
   );
 };
 
-const response = await fetch("https://your-fastapi-app.onrender.com/agent", {
+const response = await fetch("https://langflow-1-og1f.onrender.com/agent", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ input: "Tell me about loan options" }),
