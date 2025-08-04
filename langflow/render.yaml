@@ -2,7 +2,7 @@ services:
   - type: web
     name: langflow-agent
     env: docker
-    region: singapore
+    region: frankfurt
     plan: free
     dockerfilePath: langflow/Dockerfile
     buildCommand: ""
