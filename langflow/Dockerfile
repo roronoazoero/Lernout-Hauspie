@@ -1,18 +1,17 @@
 FROM python:3.11-slim
 
-# Set working directory
 WORKDIR /app
 
-# System dependencies
 RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install LangFlow
 RUN pip install "langflow[all]"
 
-# Expose LangFlow's default port
-EXPOSE 7860
+# Render injects the port via $PORT, so we use it
+ENV PORT=7860  # Default fallback for local dev
 
-# Launch LangFlow server
-CMD ["langflow", "run", "--host", "0.0.0.0", "--port", "7860"]
+EXPOSE ${PORT}
+
+CMD ["sh", "-c", "langflow run --host 0.0.0.0 --port $PORT"]
+
