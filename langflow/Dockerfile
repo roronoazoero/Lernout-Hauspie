@@ -8,10 +8,7 @@ RUN pip install langflow==1.5.0.post1
 
 RUN pip install \
     anthropic \
-    huggingface_hub \
     langchain \
-    langchainhub \
-    supabase-py \
     psycopg2-binary
 
 ENV PORT=7860
