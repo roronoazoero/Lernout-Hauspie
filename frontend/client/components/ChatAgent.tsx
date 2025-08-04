@@ -84,3 +84,9 @@ export const ChatAgent = () => {
     </>
   );
 };
+
+const response = await fetch("https://your-fastapi-app.onrender.com/agent", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ input: "Tell me about loan options" }),
+});
