@@ -1,0 +1,154 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Native HTML Progress Element Styling */
+progress {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+progress::-webkit-progress-bar {
+  background-color: #e5e8eb;
+  border-radius: 2px;
+  height: 8px;
+}
+
+progress::-webkit-progress-value {
+  background: linear-gradient(to right, #ea580c, #f97316);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+progress::-moz-progress-bar {
+  background: linear-gradient(to right, #ea580c, #f97316);
+  border-radius: 2px;
+}
+
+@layer base {
+  /**
+   * Mortgage Calculator Design System
+   * Based on Figma design with warm color palette
+   */
+  :root {
+    /* Mortgage App Colors */
+    --background: 0 0% 100%;
+    --foreground: 28 20% 13%;
+
+    /* Primary orange colors */
+    --primary: 24 85% 56%; /* #FF8A44 */
+    --primary-foreground: 0 0% 100%;
+    --primary-dark: 24 84% 53%; /* #ED8229 */
+
+    /* Brown/tan colors */
+    --text-dark: 28 20% 13%; /* #1C140D */
+    --text-brown: 32 22% 49%; /* #99704D */
+    --text-brown-light: 32 23% 53%; /* #9C704A */
+    --text-muted: 36 22% 46%; /* #8C7059 */
+
+    /* Background colors */
+    --bg-cream: 33 28% 95%; /* #F2EDE8 */
+    --bg-cream-light: 33 33% 96%; /* #F5EDE8 */
+    --bg-warm: 38 33% 97%; /* #FCFAF7 */
+
+    /* Border and divider */
+    --border-light: 33 28% 91%; /* #E8D9CF */
+    --border: 208 15% 91%; /* #E5E8EB */
+
+    /* Standard shadcn colors for compatibility */
+    --card: 0 0% 100%;
+    --card-foreground: 28 20% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 28 20% 13%;
+    --secondary: 33 28% 95%;
+    --secondary-foreground: 28 20% 13%;
+    --muted: 33 28% 95%;
+    --muted-foreground: 36 22% 46%;
+    --accent: 33 28% 95%;
+    --accent-foreground: 28 20% 13%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --input: 33 28% 95%;
+    --ring: 24 85% 56%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family:
+      "Plus Jakarta Sans",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      sans-serif;
+    font-feature-settings: "dlig" on;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family:
+      "Plus Jakarta Sans",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      sans-serif;
+    font-weight: 700;
+  }
+}
+
+@layer utilities {
+  .text-mortgage-dark {
+    color: hsl(var(--text-dark));
+  }
+
+  .text-mortgage-brown {
+    color: hsl(var(--text-brown));
+  }
+
+  .text-mortgage-brown-light {
+    color: hsl(var(--text-brown-light));
+  }
+
+  .text-mortgage-muted {
+    color: hsl(var(--text-muted));
+  }
+
+  .bg-mortgage-cream {
+    background-color: hsl(var(--bg-cream));
+  }
+
+  .bg-mortgage-cream-light {
+    background-color: hsl(var(--bg-cream-light));
+  }
+
+  .bg-mortgage-warm {
+    background-color: hsl(var(--bg-warm));
+  }
+
+  .bg-mortgage-primary {
+    background-color: hsl(var(--primary));
+  }
+
+  .bg-mortgage-primary-dark {
+    background-color: hsl(var(--primary-dark));
+  }
+
+  .border-mortgage-light {
+    border-color: hsl(var(--border-light));
+  }
+}
