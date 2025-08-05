@@ -1,20 +1,20 @@
-# ─── General Python ─────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *.pyo
 
-# ─── Backend ────────────────────────────────────────────────
+# Backend 
 backend/.env
 backend/fastapi-env/
 backend/__pycache__/
 
-# ─── Frontend ───────────────────────────────────────────────
+# Frontend 
 frontend/.env
 frontend/node_modules/
 frontend/dist/
 frontend/dist-ssr/
+frontend/frontend-venv
 
-# ─── Logs ───────────────────────────────────────────────────
+# Logs from Builder.io 
 logs/
 *.log
 npm-debug.log*
@@ -37,8 +37,13 @@ lerna-debug.log*
 *.sln
 *.sw?
 
-# ─── Builder.io Files (if using Builder) ────────────────────
+#  Builder.io Files
 frontend/.builder/
 frontend/*.builder.json
 frontend/*.builder.mdc
 frontend/*.builder.dev.js
+
+.config/
+
+langflow/docker.env
+

@@ -34,7 +34,7 @@ export const ChatAgent = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:7860/api/v1/run/ad618d95-aaa9-4f37-8f71-5b91e5e5f66c", // ⬅️ Change to your hosted LangFlow URL
+        "http://localhost:7860/api/v1/run/ad618d95-aaa9-4f37-8f71-5b91e5e5f66c",
         {
           method: "POST",
           headers: {
