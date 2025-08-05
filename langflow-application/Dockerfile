@@ -1,7 +1,7 @@
 FROM langflowai/langflow:latest
 
 # Copy MedFi.json into container
-COPY flows/MedFi.json /flows/MedFi.json
+COPY langflow-application/flows/MedFi.json app/flows/MedFi.json
 
 # Load the flow on boot
 ENV LANGFLOW_LOAD_FLOWS_PATH=/flows
