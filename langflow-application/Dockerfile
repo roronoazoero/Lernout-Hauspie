@@ -1,10 +1,10 @@
 FROM langflowai/langflow:latest
 
 # Copy MedFi.json into container
-COPY flows/MedFi.json /app/flows/MedFi.json
+COPY flows/MedFi.json /flows/MedFi.json
 
 # Load the flow on boot
-ENV LANGFLOW_LOAD_FLOWS_PATH=/app/flows
+ENV LANGFLOW_LOAD_FLOWS_PATH=/flows
 ENV PORT=7860
 EXPOSE ${PORT}
 
