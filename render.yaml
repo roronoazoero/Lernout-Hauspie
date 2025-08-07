@@ -4,7 +4,8 @@ services:
     env: docker
     plan: free
     dockerfilePath: langflow-application/Dockerfile
-    autoDeploy: true
+    buildCommand: ""
+    startCommand: ""
     envVars:
       - key: PORT
         value: 7860
