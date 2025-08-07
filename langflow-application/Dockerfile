@@ -10,4 +10,5 @@ ENV PORT=7860
 EXPOSE ${PORT}
 
 # Start LangFlow on the dynamic Render port
-CMD ["sh", "-c", "langflow run --host 0.0.0.0 --port $PORT"]
+# CMD ["sh", "-c", "langflow run --host 0.0.0.0 --port $PORT"]
+CMD ["sh", "-c", "ls -R /app && echo $PORT && langflow run --host 0.0.0.0 --port $PORT"]
