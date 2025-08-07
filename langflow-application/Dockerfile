@@ -11,4 +11,4 @@ EXPOSE ${PORT}
 
 # Start LangFlow on the dynamic Render port
 # CMD ["sh", "-c", "langflow run --host 0.0.0.0 --port $PORT"]
-CMD ["sh", "-c", "ls -R /app && echo $PORT && langflow run --host 0.0.0.0 --port $PORT"]
+CMD ["sh", "-c", "echo 'PORT is $PORT'; ls -R /app/flows; cat /app/flows/MedFi.json; langflow run --host 0.0.0.0 --port $PORT"]
