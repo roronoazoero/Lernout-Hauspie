@@ -1,14 +1,20 @@
-FROM langflowai/langflow:latest
+FROM python:3.11-slim
 
-# Create the flows folder and copy in the JSON
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
+RUN pip install langflow==1.5.0.post1 openai anthropic
+
 RUN mkdir -p /app/flows
 COPY langflow-application/flows/MedFi.json /app/flows/MedFi.json
 
-# Set environment variable to correct folder
+# ENV overrides that LangFlow actually respects
+ENV LANGFLOW_PORT=${PORT}
+ENV LANGFLOW_HOST=0.0.0.0
 ENV LANGFLOW_LOAD_FLOWS_PATH=/app/flows
-ENV PORT=7860
+
 EXPOSE ${PORT}
 
-# Start LangFlow on the dynamic Render port
-# CMD ["sh", "-c", "langflow run --host 0.0.0.0 --port $PORT"]
-CMD ["sh", "-c", "echo 'PORT is $PORT'; ls -R /app/flows; cat /app/flows/MedFi.json; langflow run --host 0.0.0.0 --port $PORT"]
+# Start LangFlow (will use ENV vars now)
+CMD ["langflow", "run"]
