@@ -195,7 +195,7 @@ async def agent_proxy(request: Request):
         "session_id": "user_1"
     }
 
-    langflow_url = os.getenv("LANGFLOW_URL")  # e.g., http://localhost:7860/api/v1/run/<flow_id>
+    langflow_url = os.getenv("LANGFLOW_URL")
     api_key = os.getenv("LANGFLOW_API_KEY")
 
     response = requests.post(

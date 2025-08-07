@@ -1,11 +1,13 @@
 FROM langflowai/langflow:latest
 
-# Copy MedFi.json into container
-COPY langflow-application/flows/MedFi.json app/flows/MedFi.json
+# Create the flows folder and copy in the JSON
+RUN mkdir -p /app/flows
+COPY langflow-application/flows/MedFi.json /app/flows/MedFi.json
 
-# Load the flow on boot
-ENV LANGFLOW_LOAD_FLOWS_PATH=/flows
+# Set environment variable to correct folder
+ENV LANGFLOW_LOAD_FLOWS_PATH=/app/flows
 ENV PORT=7860
 EXPOSE ${PORT}
 
+# Start LangFlow on the dynamic Render port
 CMD ["sh", "-c", "langflow run --host 0.0.0.0 --port $PORT"]
