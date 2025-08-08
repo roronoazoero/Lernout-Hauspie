@@ -1,14 +1,16 @@
 services:
   - type: web
-    name: langflow-medfi
+    name: langflow-server
     env: docker
     plan: free
-    dockerfilePath: langflow-application/Dockerfile
-    autoDeploy: true
+    dockerfilePath: ./Dockerfile
     envVars:
-      - key: PORT
+      - key: LANGFLOW_API_KEY
+        sync: false   # Will be set manually in Render dashboard
+      - key: LANGFLOW_HOST
+        value: 0.0.0.0
+      - key: LANGFLOW_PORT
         value: 7860
-      - key: LANGFLOW_LOAD_FLOWS_PATH
-        value: /app/flows
       - key: ANTHROPIC_API_KEY
-        fromDashboard: true
+        from Dashboard: true
+    autoDeploy: true

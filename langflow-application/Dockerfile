@@ -1,24 +1,24 @@
+# Use Python base
 FROM python:3.11-slim
 
-# Set working directory
+# Set environment variables for LangFlow (defaults can be overridden by Render)
+ENV LANGFLOW_PORT=7860 \
+    LANGFLOW_HOST=0.0.0.0 \
+    PYTHONUNBUFFERED=1
+
+# Create app directory
 WORKDIR /app
 
-# Install git (required by LangFlow), clean up after
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential curl git && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install dependencies
-COPY langflow-application/requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Install LangFlow
+RUN pip install --no-cache-dir langflow
 
-# Copy the flow file into the container
-RUN mkdir -p /app/flows
-COPY langflow-application/flows/MedFi.json /app/flows/MedFi.json
+# Copy your flow file (replace with your actual file path)
+COPY MedFi.json /app/MedFi.json
 
-# LangFlow env vars
-ENV LANGFLOW_LOAD_FLOWS_PATH=/app/flows
-ENV LANGFLOW_HOST=0.0.0.0
-ENV LANGFLOW_PORT=${PORT}
-EXPOSE ${PORT}
-
-# Run LangFlow using Render's injected port
-CMD ["langflow", "run"]
+# Start LangFlow server, picking up env vars from Render
+CMD ["sh", "-c", "langflow run --host $LANGFLOW_HOST --port $LANGFLOW_PORT --flow /app/MedFi.json"]
