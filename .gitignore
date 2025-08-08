@@ -45,5 +45,7 @@ frontend/*.builder.dev.js
 
 .config/
 
-langflow/docker.env
+langflow-application/docker.env
+langflow-application/.venv/
+render.yaml
 
