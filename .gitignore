@@ -5,6 +5,9 @@ __pycache__/
 # Backend 
 backend/.env
 backend/fastapi-env/
+backend/app/__pycache__/
+backend/app/schemas/__pycache__/
+backend/app/clients/__pycache__/
 backend/__pycache__/
 
 # Frontend 
