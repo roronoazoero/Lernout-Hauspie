@@ -4,13 +4,17 @@ import time
 import logging
 from contextlib import asynccontextmanager
 from typing import Optional
+from dotenv import load_dotenv
 
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .schemas.chat import ChatRequest, ChatResponse, ChatError, ErrorDetail
-from .clients.langflow_client import create_langflow_client, LangFlowClient
+from app.schemas.chat import ChatRequest, ChatResponse, ChatError, ErrorDetail
+from app.clients.langflow_client import create_langflow_client, LangFlowClient
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
