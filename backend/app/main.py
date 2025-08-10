@@ -3,12 +3,17 @@ import uuid
 import time
 import logging
 from contextlib import asynccontextmanager
-from typing import Optional
+from typing import Optional, List
 from dotenv import load_dotenv
+from datetime import date
 
-from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi import FastAPI, HTTPException, Request, Depends, Query, Path
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, Date, Numeric
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, Session
 
 from app.schemas.chat import ChatRequest, ChatResponse, ChatError, ErrorDetail
 from app.clients.langflow_client import create_langflow_client, LangFlowClient
@@ -22,6 +27,96 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# === Database Configuration ===
+DATABASE_URL = os.getenv("DATABASE_URL")
+engine = create_engine(DATABASE_URL) if DATABASE_URL else None
+SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False) if engine else None
+Base = declarative_base()
+
+# === SQLAlchemy ORM Models ===
+class LoanApplication(Base):
+    __tablename__ = "LoanApplication"
+
+    id = Column(Integer, primary_key=True, index=True)
+    applicationdate = Column(Date)
+    age = Column(Integer)
+    annualincome = Column(Numeric(12, 2))
+    creditscore = Column(Numeric(5, 2))
+    employmentstatus = Column(String)
+    educationlevel = Column(String)
+    experience = Column(Integer)
+    loanamount = Column(Numeric(12, 2))
+    loanduration = Column(Integer)
+    maritalstatus = Column(String)
+    numberofdependents = Column(Integer)
+    homeownershipstatus = Column(String)
+    monthlydebtpayments = Column(Numeric(12, 2))
+    creditcardutilizationrate = Column(Numeric(5, 4))
+    numberofopencreditlines = Column(Integer)
+    numberofcreditinquiries = Column(Integer)
+    debttoincomeratio = Column(Numeric(5, 4))
+    bankruptcyhistory = Column(Boolean)
+    loanpurpose = Column(String)
+    previousloandefaults = Column(Boolean)
+    paymenthistory = Column(String)
+    lengthofcredithistory = Column(Integer)
+    savingsaccountbalance = Column(Numeric(12, 2))
+    checkingaccountbalance = Column(Numeric(12, 2))
+    totalassets = Column(Numeric(14, 2))
+    totalliabilities = Column(Numeric(14, 2))
+    monthlyincome = Column(Numeric(12, 2))
+    utilitybillspaymenthistory = Column(String)
+    jobtenure = Column(Integer)
+    networth = Column(Numeric(14, 2))
+    baseinterestrate = Column(Numeric(5, 3))
+    interestrate = Column(Numeric(5, 3))
+    monthlyloanpayment = Column(Numeric(12, 2))
+    totaldebttoincomeratio = Column(Numeric(5, 4))
+    loanapproved = Column(Boolean)
+    riskscore = Column(Numeric(5, 2))
+
+# === Pydantic Models for Database Operations ===
+class LoanApplicationCreate(BaseModel):
+    applicationdate: Optional[str]
+    age: int
+    annualincome: float
+    creditscore: float
+    employmentstatus: str
+    educationlevel: str
+    experience: int
+    loanamount: float
+    loanduration: int
+    maritalstatus: str
+    numberofdependents: int
+    homeownershipstatus: str
+    monthlydebtpayments: float
+    creditcardutilizationrate: float
+    numberofopencreditlines: int
+    numberofcreditinquiries: int
+    debttoincomeratio: float
+    bankruptcyhistory: bool
+    loanpurpose: str
+    previousloandefaults: bool
+    paymenthistory: str
+    lengthofcredithistory: int
+    savingsaccountbalance: float
+    checkingaccountbalance: float
+    totalassets: float
+    totalliabilities: float
+    monthlyincome: float
+    utilitybillspaymenthistory: str
+    jobtenure: int
+    networth: float
+    baseinterestrate: float
+    interestrate: float
+    monthlyloanpayment: float
+    totaldebttoincomeratio: float
+    loanapproved: bool
+    riskscore: float
+
+    class Config:
+        from_attributes = True
 
 # Global client instance
 langflow_client: Optional[LangFlowClient] = None
@@ -83,6 +178,18 @@ app.add_middleware(
 )
 
 
+# === Dependencies ===
+def get_db():
+    """Database session dependency."""
+    if not SessionLocal:
+        raise HTTPException(status_code=503, detail="Database not configured")
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 def get_langflow_client() -> LangFlowClient:
     """Dependency to get the LangFlow client instance."""
     if langflow_client is None:
@@ -140,8 +247,89 @@ async def health_check():
     return {
         "status": "healthy",
         "timestamp": time.time(),
-        "langflow_client_ready": langflow_client is not None
+        "langflow_client_ready": langflow_client is not None,
+        "database_ready": SessionLocal is not None
     }
+
+
+# === Database CRUD Endpoints ===
+@app.get("/loans", response_model=List[LoanApplicationCreate])
+def read_loans(db: Session = Depends(get_db)):
+    """Get all loan applications."""
+    return db.query(LoanApplication).all()
+
+
+@app.post("/loans", response_model=LoanApplicationCreate)
+def create_loan(application: LoanApplicationCreate, db: Session = Depends(get_db)):
+    """Create a new loan application."""
+    db_app = LoanApplication(**application.dict())
+    db.add(db_app)
+    db.commit()
+    db.refresh(db_app)
+    return db_app
+
+
+@app.put("/loans/{loan_id}", response_model=LoanApplicationCreate)
+def update_loan(loan_id: int, updated_data: LoanApplicationCreate, db: Session = Depends(get_db)):
+    """Update an existing loan application."""
+    loan = db.query(LoanApplication).filter(LoanApplication.id == loan_id).first()
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan application not found")
+    
+    for key, value in updated_data.dict().items():
+        setattr(loan, key, value)
+    
+    db.commit()
+    db.refresh(loan)
+    return loan
+
+
+@app.delete("/loans/{loan_id}")
+def delete_loan(loan_id: int, db: Session = Depends(get_db)):
+    """Delete a loan application."""
+    loan = db.query(LoanApplication).filter(LoanApplication.id == loan_id).first()
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan application not found")
+    
+    db.delete(loan)
+    db.commit()
+    return {"message": f"Loan application {loan_id} deleted successfully"}
+
+
+@app.get("/loans/search", response_model=List[LoanApplicationCreate])
+def search_loans(
+    age: Optional[int] = None,
+    loanamount: Optional[float] = Query(None, description="Exact loan amount"),
+    creditscore: Optional[float] = Query(None, description="Exact credit score"),
+    employmentstatus: Optional[str] = Query(None, description="Partial match"),
+    loanapproved: Optional[bool] = Query(None, description="Whether the loan was approved"),
+    db: Session = Depends(get_db),
+):
+    """Search loan applications with filters."""
+    query = db.query(LoanApplication)
+
+    if age is not None:
+        query = query.filter(LoanApplication.age == age)
+    if loanamount is not None:
+        query = query.filter(LoanApplication.loanamount == loanamount)
+    if creditscore is not None:
+        query = query.filter(LoanApplication.creditscore == creditscore)
+    if employmentstatus is not None:
+        query = query.filter(LoanApplication.employmentstatus.ilike(f"%{employmentstatus}%"))
+    if loanapproved is not None:
+        query = query.filter(LoanApplication.loanapproved == loanapproved)
+
+    return query.all()
+
+
+@app.post("/calculate-rate")
+def calculate_rate(income: float, loan_amount: float, duration: int):
+    """Calculate interest rate based on loan parameters."""
+    base_rate = 3.5
+    risk_factor = (loan_amount / income) * 0.1
+    duration_factor = (duration / 12) * 0.05
+    interest = base_rate + risk_factor + duration_factor
+    return {"calculated_rate": round(interest, 2)}
 
 
 @app.post("/agent", response_model=ChatResponse)
