@@ -1,87 +1,97 @@
+// lib/mortgage.ts - Fixed version with all required properties
+
 export interface MortgageInputs {
   loanAmount: number;
-  interestRate: number; // Annual percentage rate
+  interestRate: number;
   loanTermYears: number;
   downPayment: number;
-  propertyPrice?: number;
+  propertyPrice: number;
 }
 
 export interface MortgageResults {
+  // Core calculation results
   monthlyPayment: number;
   totalInterest: number;
   totalPayment: number;
-  principalAmount: number;
+  
+  // Input values for reference
+  loanAmount: number;
+  interestRate: number;
+  loanTermYears: number;
+  downPayment: number;
+  propertyPrice: number;
+  
+  // Additional calculated fields
+  loanToValueRatio: number;
+  principalAndInterest: number;
 }
 
-/**
- * Calculate monthly mortgage payment using the standard mortgage formula
- */
 export function calculateMortgage(inputs: MortgageInputs): MortgageResults {
   const { loanAmount, interestRate, loanTermYears } = inputs;
   
-  // Convert annual rate to monthly and percentage to decimal
-  const monthlyRate = (interestRate / 100) / 12;
-  const numberOfPayments = loanTermYears * 12;
+  // Convert annual rate to monthly and years to months
+  const monthlyRate = interestRate / 100 / 12;
+  const numPayments = loanTermYears * 12;
   
-  // Calculate monthly payment using mortgage formula
-  let monthlyPayment = 0;
-  if (monthlyRate > 0) {
-    monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / 
-                    (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
-  } else {
-    // If interest rate is 0
-    monthlyPayment = loanAmount / numberOfPayments;
-  }
+  // Calculate monthly payment using the standard mortgage formula
+  const monthlyPayment = monthlyRate === 0 
+    ? loanAmount / numPayments
+    : (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
+      (Math.pow(1 + monthlyRate, numPayments) - 1);
   
-  const totalPayment = monthlyPayment * numberOfPayments;
+  const totalPayment = monthlyPayment * numPayments;
   const totalInterest = totalPayment - loanAmount;
+  const loanToValueRatio = (loanAmount / inputs.propertyPrice) * 100;
   
   return {
-    monthlyPayment: Math.round(monthlyPayment * 100) / 100,
-    totalInterest: Math.round(totalInterest * 100) / 100,
-    totalPayment: Math.round(totalPayment * 100) / 100,
-    principalAmount: loanAmount
+    monthlyPayment,
+    totalInterest,
+    totalPayment,
+    loanAmount: inputs.loanAmount,
+    interestRate: inputs.interestRate,
+    loanTermYears: inputs.loanTermYears,
+    downPayment: inputs.downPayment,
+    propertyPrice: inputs.propertyPrice,
+    loanToValueRatio,
+    principalAndInterest: monthlyPayment
   };
 }
 
-/**
- * Format currency for display
- */
-export function formatCurrency(amount: number, currency: string = '$'): string {
-  return `${currency}${amount.toLocaleString('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  })}`;
-}
-
-/**
- * Calculate loan amount from property price and down payment
- */
-export function calculateLoanAmount(propertyPrice: number, downPayment: number): number {
-  return Math.max(0, propertyPrice - downPayment);
-}
-
-/**
- * Validate mortgage inputs
- */
-export function validateMortgageInputs(inputs: Partial<MortgageInputs>): string[] {
+export function validateMortgageInputs(inputs: MortgageInputs): string[] {
   const errors: string[] = [];
   
-  if (!inputs.loanAmount || inputs.loanAmount <= 0) {
-    errors.push('Loan amount must be greater than 0');
+  if (inputs.loanAmount <= 0) {
+    errors.push("Loan amount must be greater than 0");
   }
   
-  if (!inputs.interestRate || inputs.interestRate < 0 || inputs.interestRate > 50) {
-    errors.push('Interest rate must be between 0 and 50%');
+  if (inputs.interestRate < 0 || inputs.interestRate > 30) {
+    errors.push("Interest rate must be between 0 and 30%");
   }
   
-  if (!inputs.loanTermYears || inputs.loanTermYears <= 0 || inputs.loanTermYears > 50) {
-    errors.push('Loan term must be between 1 and 50 years');
+  if (inputs.loanTermYears <= 0 || inputs.loanTermYears > 50) {
+    errors.push("Loan term must be between 1 and 50 years");
   }
   
-  if (!inputs.downPayment || inputs.downPayment < 0) {
-    errors.push('Down payment must be 0 or greater');
+  if (inputs.downPayment < 0) {
+    errors.push("Down payment cannot be negative");
+  }
+  
+  if (inputs.propertyPrice <= 0) {
+    errors.push("Property price must be greater than 0");
+  }
+  
+  if (inputs.downPayment >= inputs.propertyPrice) {
+    errors.push("Down payment cannot be greater than or equal to property price");
   }
   
   return errors;
+}
+
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
 }

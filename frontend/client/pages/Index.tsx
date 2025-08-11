@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 
 import BottomNavigation from "../components/BottomNavigation";
+import StartPage from "../components/StartPage";
 import MortgageCalculator from "../components/MortgageCalculator";
 import MortgageResults from "../components/MortgageResults";
+import BankSelection from "../components/BankSelection";
 import MortgageChat from "../components/MortgageChat";
 import MortgageApplicationForm from "../components/MortgageApplicationForm";
 import ApplicationSummary from "../components/ApplicationSummary";
@@ -17,8 +19,9 @@ import {
   calculateMortgage,
 } from "../lib/mortgage";
 
+// Keep original tab types to avoid BottomNavigation errors
 type ActiveTab = "calculator" | "chat" | "documents" | "profile";
-type CalculatorView = "input" | "results";
+type CalculatorView = "start" | "input" | "results" | "bankSelection";
 type ChatView =
   | "choice"       // MortgageChat splash (your two buttons)
   | "application"  // MortgageApplicationForm
@@ -30,11 +33,16 @@ type ChatView =
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("calculator");
-  const [calculatorView, setCalculatorView] = useState<CalculatorView>("input");
+  const [calculatorView, setCalculatorView] = useState<CalculatorView>("start");
   const [chatView, setChatView] = useState<ChatView>("choice");
   const [results, setResults] = useState<CalcResults | null>(null);
+  const [selectedBank, setSelectedBank] = useState<string>("");
 
   // --- Calculator handlers ---
+  const handleStart = () => {
+    setCalculatorView("input");
+  };
+
   const handleCalculate = (inputs: MortgageInputs) => {
     const r = calculateMortgage(inputs);
     setResults(r);
@@ -45,18 +53,31 @@ export default function Index() {
     setCalculatorView("input");
   };
 
+  const handleBackToStart = () => {
+    setCalculatorView("start");
+    setResults(null);
+  };
+
   const handleStartApplication = () => {
-    // from Results → go to Chat tab (MortgageChat renders the splash with two choices)
+    // from Results → go to Bank Selection
+    setCalculatorView("bankSelection");
+  };
+
+  const handleBankSelect = (bankId: string) => {
+    setSelectedBank(bankId);
+    // from Bank Selection → go to Chat tab (MortgageChat renders the splash with two choices)
     setActiveTab("chat");
     setChatView("choice");
   };
 
+  const handleBackToBankSelection = () => {
+    setCalculatorView("bankSelection");
+    setActiveTab("calculator");
+  };
+
   // --- Chat flow handlers (everything after you land in the Chat tab) ---
   const handleFillApplication = () => setChatView("application");
-  const backToCalculator = () => {
-    setActiveTab("calculator");
-    setChatView("choice");
-  };
+  
   const backToChatSplash = () => setChatView("choice");
 
   const handleApplicationSubmit = (_data: any) => setChatView("summary");
@@ -77,6 +98,10 @@ export default function Index() {
 
   // --- Screen renderers by tab ---
   const renderCalculator = () => {
+    if (calculatorView === "start") {
+      return <StartPage onStart={handleStart} />;
+    }
+    
     if (calculatorView === "results" && results) {
       return (
         <MortgageResults
@@ -87,7 +112,24 @@ export default function Index() {
         />
       );
     }
-    return <MortgageCalculator onCalculate={handleCalculate} />;
+    
+    if (calculatorView === "bankSelection") {
+      return (
+        <BankSelection
+          mortgageResults={results}
+          onBankSelect={handleBankSelect}
+          onBack={() => setCalculatorView("results")}
+        />
+      );
+    }
+    
+    // Default to input view
+    return (
+      <MortgageCalculator 
+        onCalculate={handleCalculate}
+        onBack={handleBackToStart}
+      />
+    );
   };
 
   const renderChat = () => {
@@ -139,8 +181,9 @@ export default function Index() {
     return (
       <MortgageChat
         mortgageResults={results}
+        selectedBank={selectedBank}
         onFillApplication={handleFillApplication}
-        onBack={backToCalculator}
+        onBack={handleBackToBankSelection}
       />
     );
   };
@@ -168,10 +211,15 @@ export default function Index() {
     }
   };
 
+  // Hide bottom navigation on start page
+  const showBottomNavigation = calculatorView !== "start";
+
   return (
     <div className="flex h-screen w-full max-w-[390px] mx-auto flex-col bg-white overflow-hidden">
       <div className="flex-1 overflow-y-auto">{renderActive()}</div>
-      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      {showBottomNavigation && (
+        <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      )}
     </div>
   );
 }

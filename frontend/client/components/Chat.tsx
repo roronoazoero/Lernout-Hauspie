@@ -9,8 +9,7 @@ import {
   APIError 
 } from '../api/client';
 
-interface ChatComponentProps {
-  className?: string;
+interface ChatProps {
   placeholder?: string;
   maxMessages?: number;
   disabled?: boolean;
@@ -22,8 +21,7 @@ interface ChatState {
   inputValue: string;
 }
 
-export const Chat: React.FC<ChatComponentProps> = ({
-  className = '',
+export const Chat: React.FC<ChatProps> = ({
   placeholder = 'Ask me about medical financing options...',
   maxMessages = 100,
   disabled = false
@@ -157,10 +155,10 @@ export const Chat: React.FC<ChatComponentProps> = ({
   const canRetry = hasError && retryRequestRef.current;
 
   return (
-    <div className={`flex flex-col h-full bg-white border border-gray-200 rounded-lg shadow-sm ${className}`}>
+    <div className="flex flex-col h-full bg-white border border-gray-200 rounded-lg shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50 rounded-t-lg">
-        <h2 className="text-lg font-semibold text-gray-800">MedFi Assistant</h2>
+        <h2 className="text-lg font-semibold text-gray-800">Mortgage Assistant</h2>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-500">
             Session: {state.sessionId.slice(-8)}
@@ -182,13 +180,13 @@ export const Chat: React.FC<ChatComponentProps> = ({
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {state.messages.length === 0 && (
           <div className="text-center text-gray-500 py-8">
-            <p className="text-lg mb-2">👋 Hi! I'm your MedFi assistant.</p>
+            <p className="text-lg mb-2">👋 Hi! I'm your Mortgage Assistant.</p>
             <p className="mb-2">I can help you with:</p>
             <ul className="text-sm space-y-1 text-left max-w-md mx-auto">
-              <li>• Medical loan options and financing</li>
-              <li>• Surgery payment plans</li>
-              <li>• Insurance and healthcare financing</li>
-              <li>• Medical bill consolidation</li>
+              <li>• Applying for a mortgage</li>
+              <li>• Tracking of loan applications</li>
+              <li>• Inquiries about loan terms</li>
+              <li>• Updating your loan application details</li>
             </ul>
             <p className="text-sm mt-4 text-gray-400">
               Your conversation is secure and session-based.
@@ -267,7 +265,7 @@ export const Chat: React.FC<ChatComponentProps> = ({
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               disabled={disabled || isLoading}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               rows={1}
               style={{ minHeight: '40px', maxHeight: '120px' }}
               aria-label="Message input"
@@ -276,7 +274,7 @@ export const Chat: React.FC<ChatComponentProps> = ({
           <button
             type="submit"
             disabled={disabled || isLoading || !state.inputValue.trim()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             aria-label="Send message"
           >
             {isLoading ? (
@@ -295,7 +293,7 @@ export const Chat: React.FC<ChatComponentProps> = ({
               <span>{state.messages.length} messages in session</span>
             )}
             {isLoading && (
-              <span className="text-blue-600 font-medium">⏳ Agent processing...</span>
+              <span className="text-orange-600 font-medium">⏳ Agent processing...</span>
             )}
           </div>
         </div>
