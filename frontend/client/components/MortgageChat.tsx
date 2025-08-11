@@ -301,7 +301,7 @@ export default function MortgageChat({ mortgageResults, selectedBank, onFillAppl
           </svg>
         </button>
         <h1 className="flex-1 pr-10 text-center text-base font-bold leading-6 text-mortgage-dark">
-          {selectedBank ? `${selectedBank.toUpperCase()} Assistant Chat` : 'Mortgage Assistant Chat'}
+          {'OP Mortgage Assistant Chat'}
         </h1>
       </div>
 
@@ -350,7 +350,7 @@ export default function MortgageChat({ mortgageResults, selectedBank, onFillAppl
               <div className={`max-w-[280px] ${message.sender === 'user' ? 'ml-12' : 'mr-12'}`}>
                 <div className="mb-1">
                   <span className={`text-sm ${message.sender === 'user' ? 'text-right' : 'text-left'} text-mortgage-brown`}>
-                    {message.sender === 'user' ? 'You' : `${selectedBank ? selectedBank.charAt(0).toUpperCase() + selectedBank.slice(1) : 'Mortgage'} Assistant`}
+                    {message.sender === 'user' ? 'You' : 'OP Mortgage Assistant'}
                   </span>
                 </div>
                 <div className={`rounded-xl p-3 ${
@@ -446,7 +446,7 @@ export default function MortgageChat({ mortgageResults, selectedBank, onFillAppl
             <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
                 type="text"
-                placeholder="Ask me about mortgage options, rates, application process..."
+                placeholder="Send message..."
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
@@ -472,7 +472,7 @@ export default function MortgageChat({ mortgageResults, selectedBank, onFillAppl
         </div>
 
         {/* Input hints and session info */}
-        <div className="mb-4 flex justify-between items-center text-xs text-gray-500">
+        {/* <div className="mb-4 flex justify-between items-center text-xs text-gray-500">
           <span>Press Enter to send</span>
           <div className="flex items-center gap-2">
             <span>Session: {chatState.sessionId.slice(-8)}</span>
@@ -483,7 +483,7 @@ export default function MortgageChat({ mortgageResults, selectedBank, onFillAppl
               <span className="text-primary font-medium">⏳ Agent processing...</span>
             )}
           </div>
-        </div>
+        </div> */}
 
         {/* Action buttons at bottom */}
         <div className="flex gap-2">
