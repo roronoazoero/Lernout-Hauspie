@@ -1,8 +1,8 @@
 import React, { useState } from "react";
+
 import BottomNavigation from "../components/BottomNavigation";
 import MortgageCalculator from "../components/MortgageCalculator";
 import MortgageResults from "../components/MortgageResults";
-import BankSelection from "../components/BankSelection";
 import MortgageChat from "../components/MortgageChat";
 import MortgageApplicationForm from "../components/MortgageApplicationForm";
 import ApplicationSummary from "../components/ApplicationSummary";
@@ -13,16 +13,15 @@ import EditDetails from "../components/EditDetails";
 
 import {
   MortgageInputs,
-  MortgageResults as ResultsType,
+  MortgageResults as CalcResults,
   calculateMortgage,
 } from "../lib/mortgage";
 
+type ActiveTab = "calculator" | "chat" | "documents" | "profile";
 type CalculatorView = "input" | "results";
-type ActiveTab = "chat" | "calculator" | "documents" | "profile";
 type ChatView =
-  | "choice"
-  | "chat"
-  | "application"
+  | "choice"       // MortgageChat splash (your two buttons)
+  | "application"  // MortgageApplicationForm
   | "summary"
   | "documents"
   | "success"
@@ -33,117 +32,74 @@ export default function Index() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("calculator");
   const [calculatorView, setCalculatorView] = useState<CalculatorView>("input");
   const [chatView, setChatView] = useState<ChatView>("choice");
-  const [mortgageResults, setMortgageResults] = useState<ResultsType | null>(
-    null,
-  );
+  const [results, setResults] = useState<CalcResults | null>(null);
 
-  // Chat screen component
-  const ChatScreen = () => {
-    const handleFillApplication = () => {
-      setChatView("application");
-    };
+  // --- Calculator handlers ---
+  const handleCalculate = (inputs: MortgageInputs) => {
+    const r = calculateMortgage(inputs);
+    setResults(r);
+    setCalculatorView("results");
+  };
 
-    const handleBackToCalculator = () => {
-      setActiveTab("calculator");
-      setChatView("choice");
-    };
+  const handleRecalculate = () => {
+    setCalculatorView("input");
+  };
 
-    const handleBackToChat = () => {
-      setChatView("choice");
-    };
+  const handleStartApplication = () => {
+    // from Results → go to Chat tab (MortgageChat renders the splash with two choices)
+    setActiveTab("chat");
+    setChatView("choice");
+  };
 
-    const handleApplicationSubmit = (data: any) => {
-      console.log("Application submitted:", data);
-      // Move to summary screen after form submission
-      setChatView("summary");
-    };
+  // --- Chat flow handlers (everything after you land in the Chat tab) ---
+  const handleFillApplication = () => setChatView("application");
+  const backToCalculator = () => {
+    setActiveTab("calculator");
+    setChatView("choice");
+  };
+  const backToChatSplash = () => setChatView("choice");
 
-    const handleSummarySubmit = () => {
-      console.log("Moving to documents upload");
-      setChatView("documents");
-    };
+  const handleApplicationSubmit = (_data: any) => setChatView("summary");
+  const handleSummaryBack = () => setChatView("application");
+  const handleSummarySubmit = () => setChatView("documents");
+  const handleSummaryEdit = (_section: string) => setChatView("edit");
 
-    const handleSummaryEdit = (section: string) => {
-      console.log("Edit section:", section);
-      // Navigate to edit details screen
-      setChatView("edit");
-    };
+  const handleDocsBack = () => setChatView("summary");
+  const handleDocsSubmit = () => setChatView("success");
 
-    const handleDocumentsSubmit = () => {
-      console.log("Documents submitted successfully!");
-      setChatView("success");
-    };
+  const handleSuccessBack = () => setChatView("documents");
+  const handleCheckStatus = () => setChatView("status");
 
-    const handleDocumentsBack = () => {
-      setChatView("summary");
-    };
+  const handleStatusBack = () => setChatView("success");
+  const handleEditApplication = () => setChatView("edit");
+  const handleEditBack = () => setChatView("status");
+  const handleEditSave = (_data: any) => setChatView("status");
 
-    const handleSuccessBack = () => {
-      setChatView("documents");
-    };
-
-    const handleCheckStatus = () => {
-      console.log("Check status clicked");
-      setChatView("status");
-    };
-
-    const handleStatusBack = () => {
-      setChatView("success");
-    };
-
-    const handleEditApplication = () => {
-      setChatView("edit");
-    };
-
-    const handleEditBack = () => {
-      setChatView("status");
-    };
-
-    const handleEditSave = (data: any) => {
-      console.log("Edit details saved:", data);
-      setChatView("status");
-    };
-
-    const handleSummaryBack = () => {
-      setChatView("application");
-    };
-
-    // Show edit details screen if in edit view
-    if (chatView === "edit") {
-      return <EditDetails onBack={handleEditBack} onSave={handleEditSave} />;
-    }
-
-    // Show application status screen if in status view
-    if (chatView === "status") {
+  // --- Screen renderers by tab ---
+  const renderCalculator = () => {
+    if (calculatorView === "results" && results) {
       return (
-        <ApplicationStatus
-          onBack={handleStatusBack}
-          onEditApplication={handleEditApplication}
+        <MortgageResults
+          results={results}
+          onBack={handleRecalculate}
+          onRecalculate={handleRecalculate}
+          onStartApplication={handleStartApplication}
         />
       );
     }
+    return <MortgageCalculator onCalculate={handleCalculate} />;
+  };
 
-    // Show success screen if in success view
-    if (chatView === "success") {
+  const renderChat = () => {
+    // post‑splash flows
+    if (chatView === "application") {
       return (
-        <ApplicationSuccess
-          onBack={handleSuccessBack}
-          onCheckStatus={handleCheckStatus}
+        <MortgageApplicationForm
+          onBack={backToChatSplash}
+          onSubmit={handleApplicationSubmit}
         />
       );
     }
-
-    // Show upload documents if in documents view
-    if (chatView === "documents") {
-      return (
-        <UploadDocuments
-          onBack={handleDocumentsBack}
-          onSubmit={handleDocumentsSubmit}
-        />
-      );
-    }
-
-    // Show application summary if in summary view
     if (chatView === "summary") {
       return (
         <ApplicationSummary
@@ -153,110 +109,68 @@ export default function Index() {
         />
       );
     }
-
-    // Show application form if in application view
-    if (chatView === "application") {
+    if (chatView === "documents") {
       return (
-        <MortgageApplicationForm
-          onBack={handleBackToChat}
-          onSubmit={handleApplicationSubmit}
+        <UploadDocuments onBack={handleDocsBack} onSubmit={handleDocsSubmit} />
+      );
+    }
+    if (chatView === "success") {
+      return (
+        <ApplicationSuccess
+          onBack={handleSuccessBack}
+          onCheckStatus={handleCheckStatus}
         />
       );
     }
+    if (chatView === "status") {
+      return (
+        <ApplicationStatus
+          onBack={handleStatusBack}
+          onEditApplication={handleEditApplication}
+        />
+      );
+    }
+    if (chatView === "edit") {
+      return <EditDetails onBack={handleEditBack} onSave={handleEditSave} />;
+    }
 
-    // Show chat interface
+    // splash + chat (Start Application Chat lives inside MortgageChat and
+    // toggles its internal chatStarted state—no extra props needed)
     return (
       <MortgageChat
-        mortgageResults={mortgageResults}
+        mortgageResults={results}
         onFillApplication={handleFillApplication}
-        onBack={handleBackToCalculator}
+        onBack={backToCalculator}
       />
     );
   };
 
-  // Documents screen
-  const DocumentsScreen = () => {
-    const handleDocumentsBack = () => {
-      setActiveTab("calculator");
-    };
+  const renderDocuments = () => (
+    <UploadDocuments onBack={() => setActiveTab("calculator")} onSubmit={() => alert("Documents submitted")} />
+  );
 
-    const handleDocumentsSubmit = () => {
-      console.log("Documents submitted from Documents tab");
-      alert("Documents submitted successfully!");
-    };
+  const renderProfile = () => (
+    <ApplicationStatus onBack={() => setActiveTab("calculator")} onEditApplication={() => setChatView("edit")} />
+  );
 
-    return (
-      <UploadDocuments
-        onBack={handleDocumentsBack}
-        onSubmit={handleDocumentsSubmit}
-      />
-    );
-  };
-
-  // Profile screen with bank selection
-  const ProfileScreen = () => {
-    const handleBankSelect = (bankId: string) => {
-      console.log("Selected bank:", bankId);
-      // TODO: Implement bank authentication flow
-      alert(`Connecting to ${bankId}...`);
-    };
-
-    const handleCancel = () => {
-      console.log("Cancelled bank login");
-      // Could navigate back or show a different view
-    };
-
-    return (
-      <BankSelection onBankSelect={handleBankSelect} onCancel={handleCancel} />
-    );
-  };
-
-  const handleCalculate = (inputs: MortgageInputs) => {
-    const results = calculateMortgage(inputs);
-    setMortgageResults(results);
-    setCalculatorView("results");
-  };
-
-  const handleRecalculate = () => {
-    setCalculatorView("input");
-  };
-
-  const handleStartApplication = () => {
-    // Switch to chat tab for application process
-    setActiveTab("chat");
-  };
-
-  const renderActiveScreen = () => {
+  const renderActive = () => {
     switch (activeTab) {
       case "calculator":
-        if (calculatorView === "results" && mortgageResults) {
-          return (
-            <MortgageResults
-              results={mortgageResults}
-              onBack={handleRecalculate}
-              onRecalculate={handleRecalculate}
-              onStartApplication={handleStartApplication}
-            />
-          );
-        }
-        return <MortgageCalculator onCalculate={handleCalculate} />;
+        return renderCalculator();
       case "chat":
-        return <ChatScreen />;
+        return renderChat();
       case "documents":
-        return <DocumentsScreen />;
+        return renderDocuments();
       case "profile":
-        return <ProfileScreen />;
+        return renderProfile();
       default:
-        return <MortgageCalculator onCalculate={handleCalculate} />;
+        return renderCalculator();
     }
   };
 
   return (
     <div className="flex h-screen w-full max-w-[390px] mx-auto flex-col bg-white overflow-hidden">
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">{renderActiveScreen()}</div>
-
-      {/* Bottom Navigation */}
+      <div className="flex-1 overflow-y-auto">{renderActive()}</div>
       <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );

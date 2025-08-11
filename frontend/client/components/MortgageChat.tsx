@@ -1,92 +1,145 @@
-import React, { useState } from 'react';
-import { MortgageResults } from '../lib/mortgage';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import {
+  chatAPI,
+  getOrCreateSessionId,
+  APIError,
+  ChatMessage,
+  ChatRequest,
+  ChatResponse,
+} from "../api/client";
+import { MortgageResults } from "../lib/mortgage";
 
 interface MortgageChatProps {
   mortgageResults?: MortgageResults | null;
   onFillApplication: () => void;
   onBack?: () => void;
+  maxMessages?: number;
+  placeholder?: string;
+  disabled?: boolean;
 }
 
-interface ChatMessage {
-  id: string;
-  sender: 'support' | 'user';
-  content: string;
-  timestamp: Date;
-}
-
-export default function MortgageChat({ mortgageResults, onFillApplication, onBack }: MortgageChatProps) {
+export default function MortgageChat({
+  mortgageResults,
+  onFillApplication = () => console.warn("onFillApplication not provided"),
+  onBack,
+  maxMessages = 100,
+  placeholder = "Ask me about mortgage options…",
+  disabled = false,
+}: MortgageChatProps) {
+  // session + chat state
+  const [sessionId] = useState<string>(() => getOrCreateSessionId());
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [inputValue, setInputValue] = useState("");
   const [chatStarted, setChatStarted] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '1',
-      sender: 'support',
-      content: "What is your marital status?",
-      timestamp: new Date()
-    }
-  ]);
-  const [messageInput, setMessageInput] = useState('');
 
-  const handleStartChat = () => {
-    setChatStarted(true);
-  };
+  // keep a ref to retry the last request
+  const retryRequestRef = useRef<ChatRequest | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
 
-  const handleSendMessage = () => {
-    if (!messageInput.trim()) return;
+  // initial greeting (shown when no messages yet)
+  const showWelcome = messages.length === 0;
 
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      sender: 'user',
-      content: messageInput,
-      timestamp: new Date()
-    };
+  // scroll to bottom as messages change
+  useEffect(
+    () => endRef.current?.scrollIntoView({ behavior: "smooth" }),
+    [messages],
+  );
 
-    setMessages(prev => [...prev, newMessage]);
-    setMessageInput('');
+  // focus input when chat becomes active
+  useEffect(() => {
+    if (chatStarted && !disabled) inputRef.current?.focus();
+  }, [chatStarted, disabled]);
 
-    // Simulate bot response based on conversation context
-    setTimeout(() => {
-      let botResponse = '';
-      if (messageInput.toLowerCase().includes('divorced')) {
-        botResponse = "Sorry to hear that! Do you have any kids?";
-      } else if (messageInput.toLowerCase().includes('married')) {
-        botResponse = "That's great! How long have you been married?";
-      } else {
-        botResponse = "Thank you for that information. Let me help you proceed with your mortgage application.";
+  const sendMessageMutation = useMutation({
+    mutationFn: async (request: ChatRequest): Promise<ChatResponse> => {
+      retryRequestRef.current = request;
+      return chatAPI.sendMessage(request);
+    },
+    onSuccess: (resp) => {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: resp.output_text },
+      ]);
+      retryRequestRef.current = null;
+      setTimeout(() => inputRef.current?.focus(), 80);
+    },
+    onError: (error: APIError) => {
+      // Put a user-friendly line in the chat (unless it was a plain network/timeout)
+      if (error.status !== 0 && error.code !== "TIMEOUT") {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: `I hit an error: ${error.message}. Please try again in a moment.`,
+          },
+        ]);
       }
+    },
+  });
 
-      const newBotMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        sender: 'support',
-        content: botResponse,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, newBotMessage]);
-    }, 1000);
-  };
+  const isLoading = sendMessageMutation.isPending;
+  const hasError = sendMessageMutation.isError;
+  const canRetry = !!retryRequestRef.current && hasError;
 
-  const handleQuickReply = (reply: string) => {
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      sender: 'user',
-      content: reply,
-      timestamp: new Date()
+  const handleStartChat = () => setChatStarted(true);
+
+  const handleSend = () => {
+    const text = inputValue.trim();
+    if (!text || disabled || isLoading) return;
+
+    const userMsg: ChatMessage = { role: "user", content: text };
+    const next = [...messages, userMsg];
+    const limited = next.slice(-maxMessages);
+    setMessages(limited);
+    setInputValue("");
+
+    const request: ChatRequest = {
+      session_id: sessionId,
+      messages: limited,
     };
-
-    setMessages(prev => [...prev, newMessage]);
+    sendMessageMutation.mutate(request);
   };
 
-  // Show application choice screen if chat hasn't started
+  const handleRetry = () => {
+    if (retryRequestRef.current && !isLoading) {
+      sendMessageMutation.mutate(retryRequestRef.current);
+    }
+  };
+
+  // keep your mortgage summary
+  const summary = useMemo(() => {
+    if (!mortgageResults) return null;
+    return {
+      loanAmount: mortgageResults.loanAmount.toLocaleString(),
+      rate: mortgageResults.interestRate,
+      term: mortgageResults.loanTermYears,
+    };
+  }, [mortgageResults]);
+
+  // --- pre-chat splash screen (your original “choose path” UI) ---
   if (!chatStarted) {
     return (
       <div className="flex h-full w-full flex-col bg-white">
-        {/* Header */}
         <div className="flex items-center justify-between bg-white px-4 py-4 border-b border-gray-100">
-          <button 
+          <button
             onClick={onBack}
             className="flex h-12 w-12 items-center justify-center"
           >
-            <svg width="18" height="16" viewBox="0 0 18 16" fill="none" className="h-6 w-6">
-              <path fillRule="evenodd" clipRule="evenodd" d="M18 8C18 8.41421 17.6642 8.75 17.25 8.75H2.56031L8.03063 14.2194C8.32368 14.5124 8.32368 14.9876 8.03063 15.2806C7.73757 15.5737 7.26243 15.5737 6.96937 15.2806L0.219375 8.53063C0.0785422 8.38995 -0.000590086 8.19906 -0.000590086 8C-0.000590086 7.80094 0.0785422 7.61005 0.219375 7.46937L6.96937 0.719375C7.26243 0.426319 7.73757 0.426319 8.03063 0.719375C8.32368 1.01243 8.32368 1.48757 8.03063 1.78062L2.56031 7.25H17.25C17.6642 7.25 18 7.58579 18 8Z" fill="#1C140D"/>
+            <svg
+              width="18"
+              height="16"
+              viewBox="0 0 18 16"
+              fill="none"
+              className="h-6 w-6"
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M18 8C18 8.41421 17.6642 8.75 17.25 8.75H2.56031L8.03063 14.2194C8.32368 14.5124 8.32368 14.9876 8.03063 15.2806C7.73757 15.5737 7.26243 15.5737 6.96937 15.2806L0.219375 8.53063C0.0785422 8.38995 -0.000590086 8.19906 -0.000590086 8C-0.000590086 7.80094 0.0785422 7.61005 0.219375 7.46937L6.96937 0.719375C7.26243 0.426319 7.73757 0.426319 8.03063 0.719375C8.32368 1.01243 8.32368 1.48757 8.03063 1.78062L2.56031 7.25H17.25C17.6642 7.25 18 7.58579 18 8Z"
+                fill="#1C140D"
+              />
             </svg>
           </button>
           <h1 className="flex-1 pr-12 text-center text-lg font-bold leading-6 text-mortgage-dark">
@@ -94,7 +147,6 @@ export default function MortgageChat({ mortgageResults, onFillApplication, onBac
           </h1>
         </div>
 
-        {/* Content */}
         <div className="flex-1 px-4 py-4">
           <div className="mb-6">
             <div className="mb-2">
@@ -116,7 +168,7 @@ export default function MortgageChat({ mortgageResults, onFillApplication, onBac
                 Fill in Application
               </span>
             </button>
-            
+
             <button
               onClick={handleStartChat}
               className="flex h-10 w-full items-center justify-center rounded-2xl bg-mortgage-cream px-4"
@@ -131,146 +183,205 @@ export default function MortgageChat({ mortgageResults, onFillApplication, onBac
     );
   }
 
-  // Show chat interface
+  // --- chat screen ---
   return (
     <div className="flex h-full w-full flex-col bg-white">
       {/* Header */}
       <div className="flex items-center justify-between bg-white px-4 py-4 border-b border-gray-100">
-        <button 
+        <button
           onClick={() => setChatStarted(false)}
           className="flex h-12 w-12 items-center justify-center"
         >
-          <svg width="18" height="16" viewBox="0 0 18 16" fill="none" className="h-6 w-6">
-            <path fillRule="evenodd" clipRule="evenodd" d="M18 8C18 8.41421 17.6642 8.75 17.25 8.75H2.56031L8.03063 14.2194C8.32368 14.5124 8.32368 14.9876 8.03063 15.2806C7.73757 15.5737 7.26243 15.5737 6.96937 15.2806L0.219375 8.53063C0.0785422 8.38995 -0.000590086 8.19906 -0.000590086 8C-0.000590086 7.80094 0.0785422 7.61005 0.219375 7.46937L6.96937 0.719375C7.26243 0.426319 7.73757 0.426319 8.03063 0.719375C8.32368 1.01243 8.32368 1.48757 8.03063 1.78062L2.56031 7.25H17.25C17.6642 7.25 18 7.58579 18 8Z" fill="#1C140D"/>
+          <svg
+            width="18"
+            height="16"
+            viewBox="0 0 18 16"
+            fill="none"
+            className="h-6 w-6"
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M18 8C18 8.41421 17.6642 8.75 17.25 8.75H2.56031L8.03063 14.2194C8.32368 14.5124 8.32368 14.9876 8.03063 15.2806C7.73757 15.5737 7.26243 15.5737 6.96937 15.2806L0.219375 8.53063C0.0785422 8.38995 -0.000590086 8.19906 -0.000590086 8C-0.000590086 7.80094 0.0785422 7.61005 0.219375 7.46937L6.96937 0.719375C7.26243 0.426319 7.73757 0.426319 8.03063 0.719375C8.32368 1.01243 8.32368 1.48757 8.03063 1.78062L2.56031 7.25H17.25C17.6642 7.25 18 7.58579 18 8Z"
+              fill="#1C140D"
+            />
           </svg>
         </button>
         <h1 className="flex-1 pr-12 text-center text-lg font-bold leading-6 text-mortgage-dark">
           Mortgage Chat
         </h1>
+        <span className="text-xs text-mortgage-brown">
+          Session: {sessionId.slice(-8)}
+        </span>
       </div>
 
-      {/* Mortgage Calculation Summary */}
+      {/* Summary */}
       {(mortgageResults || chatStarted) && (
         <div className="border-b border-gray-100 px-4 py-4">
           <h2 className="mb-6 text-lg font-bold text-mortgage-dark">
             Mortgage Calculation Summary
           </h2>
-
           <div className="space-y-6">
             <div className="flex gap-6">
               <div className="flex-1 border-t border-gray-200 pt-5">
-                <div className="text-sm text-mortgage-brown mb-1">Loan Amount</div>
+                <div className="text-sm text-mortgage-brown mb-1">
+                  Loan Amount
+                </div>
                 <div className="text-sm text-mortgage-dark font-medium">
-                  ${mortgageResults ? mortgageResults.loanAmount.toLocaleString() : '250,000'}
+                  ${summary ? summary.loanAmount : "250,000"}
                 </div>
               </div>
               <div className="flex-1 border-t border-gray-200 pt-5">
-                <div className="text-sm text-mortgage-brown mb-1">Interest Rate</div>
+                <div className="text-sm text-mortgage-brown mb-1">
+                  Interest Rate
+                </div>
                 <div className="text-sm text-mortgage-dark font-medium">
-                  {mortgageResults ? mortgageResults.interestRate : '4.5'}%
+                  {summary ? summary.rate : "4.5"}%
                 </div>
               </div>
             </div>
-
             <div className="border-t border-gray-200 pt-5">
               <div className="text-sm text-mortgage-brown mb-1">Loan Term</div>
               <div className="text-sm text-mortgage-dark font-medium">
-                {mortgageResults ? mortgageResults.loanTermYears : '30'} years
+                {summary ? summary.term : "30"} years
               </div>
             </div>
           </div>
-
           <div className="mt-6 text-base text-mortgage-dark">
             Chat with our mortgage assistant to discuss your options.
           </div>
         </div>
       )}
 
-      {/* Chat Messages */}
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
+        {/* welcome / help cards */}
+        {showWelcome && (
+          <div className="mb-6 max-w-[280px] mr-12">
+            <div className="mb-1">
+              <span className="text-sm text-left text-mortgage-brown">
+                Mortgage Bot
+              </span>
+            </div>
+            <div className="rounded-xl p-3 bg-mortgage-cream text-mortgage-dark">
+              <p className="text-base leading-6">
+                👋 Hi! I’m your mortgage assistant. Ask me anything about rates,
+                terms, or the application.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-4">
-          {messages.map((message) => (
-            <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[280px] ${message.sender === 'user' ? 'ml-12' : 'mr-12'}`}>
-                <div className="mb-1">
-                  <span className={`text-sm ${message.sender === 'user' ? 'text-right' : 'text-left'} text-mortgage-brown`}>
-                    {message.sender === 'user' ? 'Ethan' : 'Mortgage Bot'}
-                  </span>
+          {messages.map((m, idx) => {
+            const isUser = m.role === "user";
+            return (
+              <div
+                key={idx}
+                className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+              >
+                <div className={`max-w-[280px] ${isUser ? "ml-12" : "mr-12"}`}>
+                  <div className="mb-1">
+                    <span
+                      className={`text-sm ${isUser ? "text-right" : "text-left"} text-mortgage-brown`}
+                    >
+                      {isUser ? "You" : "Mortgage Bot"}
+                    </span>
+                  </div>
+                  <div
+                    className={`rounded-xl p-3 ${isUser ? "bg-primary text-white" : "bg-mortgage-cream text-mortgage-dark"}`}
+                  >
+                    <p className="text-base leading-6 whitespace-pre-wrap break-words">
+                      {m.content}
+                    </p>
+                  </div>
                 </div>
-                <div className={`rounded-xl p-3 ${
-                  message.sender === 'user' 
-                    ? 'bg-primary text-white' 
-                    : 'bg-mortgage-cream text-mortgage-dark'
-                }`}>
-                  <p className="text-base leading-6">{message.content}</p>
+              </div>
+            );
+          })}
+
+          {/* loading bubble */}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="max-w-[280px] mr-12 rounded-xl p-3 bg-mortgage-cream text-mortgage-dark border border-gray-200">
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600" />
+                  <span>Processing your request…</span>
+                </div>
+                <div className="text-xs text-mortgage-brown mt-1">
+                  This may take up to 2 minutes.
                 </div>
               </div>
             </div>
-          ))}
+          )}
+
+          {/* error + retry */}
+          {hasError && (
+            <div className="flex justify-center">
+              <div className="max-w-md px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-center">
+                <p className="text-red-800 text-sm mb-2">
+                  Something went wrong sending the last message.
+                </p>
+                {canRetry && (
+                  <button
+                    onClick={handleRetry}
+                    className="text-xs px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                  >
+                    Retry
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Quick Reply buttons */}
-        {messages.length === 1 && (
-          <div className="mt-4 flex justify-end">
-            <button
-              onClick={() => handleQuickReply('Recently divorced')}
-              className="rounded-xl bg-primary px-4 py-3 text-white"
-            >
-              Recently divorced
-            </button>
-          </div>
-        )}
-
-        {messages.length === 3 && (
-          <div className="mt-4 space-y-2">
-            <div className="text-center text-sm text-mortgage-brown mb-2">Ethan</div>
-            <div className="flex justify-center gap-3">
-              <button
-                onClick={() => handleQuickReply('No, I don\'t have children')}
-                className="rounded-2xl bg-mortgage-cream px-4 py-2 text-sm font-bold text-mortgage-dark"
-              >
-                No
-              </button>
-              <button
-                onClick={() => handleQuickReply('Yes, I have 2 children')}
-                className="rounded-2xl bg-primary px-4 py-2 text-sm font-bold text-white"
-              >
-                Yes
-              </button>
-            </div>
-          </div>
-        )}
+        <div ref={endRef} />
       </div>
 
-      {/* Message Input */}
+      {/* composer */}
       <div className="border-t border-gray-100 p-4">
-        <div className="flex items-center space-x-2 mb-4">
+        <div className="flex items-center gap-2 mb-4">
           <div className="flex-1">
             <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
+                ref={inputRef}
                 type="text"
-                placeholder="Type a message..."
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                className="w-full bg-transparent text-base text-mortgage-brown placeholder:text-mortgage-brown focus:outline-none"
+                placeholder={placeholder}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                disabled={disabled || isLoading}
+                className="w-full bg-transparent text-base text-mortgage-brown placeholder:text-mortgage-brown focus:outline-none disabled:opacity-50"
               />
             </div>
           </div>
+          <button
+            onClick={handleSend}
+            disabled={disabled || isLoading || !inputValue.trim()}
+            className="flex h-10 min-w-[84px] items-center justify-center rounded-2xl bg-primary px-4 disabled:opacity-50"
+          >
+            <span className="text-sm font-bold leading-[21px] text-white">
+              {isLoading ? "…" : "Send"}
+            </span>
+          </button>
         </div>
 
-        {/* Continue/Cancel buttons - show when there are multiple messages */}
-        {messages.length >= 2 && (
+        {/* continue / cancel */}
+        {messages.length >= 1 && (
           <div className="flex gap-3">
             <button
-              onClick={() => onFillApplication()}
+              onClick={onFillApplication}
               className="flex h-10 min-w-[84px] flex-1 items-center justify-center rounded-2xl bg-primary px-4"
             >
               <span className="text-sm font-bold leading-[21px] text-white">
                 Continue
               </span>
             </button>
-
             <button
               onClick={() => setChatStarted(false)}
               className="flex h-10 min-w-[84px] items-center justify-center rounded-2xl bg-mortgage-cream px-4"
