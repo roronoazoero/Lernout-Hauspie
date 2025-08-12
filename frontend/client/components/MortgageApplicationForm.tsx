@@ -24,16 +24,17 @@ export default function MortgageApplicationForm({
   onBack,
   onSubmit,
 }: MortgageApplicationFormProps) {
+  // Pre-populate with data from JSON
   const [formData, setFormData] = useState<ApplicationData>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phoneNumber: "",
+    firstName: "Theresa",
+    lastName: "Stewart",
+    email: "theresa.stewart@hotmail.com",
+    phoneNumber: "2845883572",
     socialSecurityNumber: "",
-    marriageStatus: "",
+    marriageStatus: "Married",
     spouseName: "",
     yearsOfMarriage: "",
-    childrenNames: "",
+    childrenNames: "2 dependents",
   });
 
   const handleInputChange = (field: keyof ApplicationData, value: string) => {
@@ -58,10 +59,10 @@ export default function MortgageApplicationForm({
   return (
     <div className="flex h-full w-full flex-col bg-white">
       {/* Header */}
-      <div className="flex items-center justify-between bg-white px-4 py-4 border-b border-gray-100">
+      <div className="flex items-center justify-between bg-white px-4 py-3 border-b border-gray-100">
         <button
           onClick={onBack}
-          className="flex h-12 w-12 items-center justify-center"
+          className="flex h-10 w-10 items-center justify-center"
         >
           <svg
             width="18"
@@ -78,63 +79,63 @@ export default function MortgageApplicationForm({
             />
           </svg>
         </button>
-        <h1 className="flex-1 pr-12 text-center text-lg font-bold leading-6 text-mortgage-dark">
+        <h1 className="flex-1 pr-10 text-center text-base font-bold leading-6 text-mortgage-dark">
           Mortgage Application
         </h1>
       </div>
 
       {/* Chatbot Message */}
       <div className="px-4 py-4">
-        <div className="mb-2">
-          <span className="text-sm text-mortgage-brown-light">Chatbot</span>
+        <div className="mb-1">
+          <span className="text-sm text-mortgage-brown">OP Mortgage Assistant</span>
         </div>
-        <div className="rounded-xl bg-mortgage-cream p-4">
+        <div className="rounded-xl bg-mortgage-cream p-3">
           <p className="text-base leading-6 text-mortgage-dark">
-            Here's your application:
+            Here's your application form with your information pre-filled:
           </p>
         </div>
       </div>
 
       {/* Form Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto px-4 space-y-6">
         {/* Personal Details Section */}
-        <div className="px-4 py-2">
+        <div className="">
           <h2 className="text-lg font-bold text-mortgage-dark mb-4">
             Personal details
           </h2>
 
           <div className="space-y-3">
-            <div className="flex h-14 items-center rounded-xl bg-mortgage-cream-light px-4">
+            <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
                 type="text"
                 placeholder="First Name"
                 value={formData.firstName}
                 onChange={(e) => handleInputChange("firstName", e.target.value)}
-                className="w-full bg-transparent text-base leading-6 text-mortgage-brown-light placeholder:text-mortgage-brown-light focus:outline-none"
+                className="w-full bg-transparent text-base leading-6 text-mortgage-dark placeholder:text-mortgage-brown focus:outline-none"
               />
             </div>
 
-            <div className="flex h-14 items-center rounded-xl bg-mortgage-cream-light px-4">
+            <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
                 type="text"
                 placeholder="Last Name"
                 value={formData.lastName}
                 onChange={(e) => handleInputChange("lastName", e.target.value)}
-                className="w-full bg-transparent text-base leading-6 text-mortgage-brown-light placeholder:text-mortgage-brown-light focus:outline-none"
+                className="w-full bg-transparent text-base leading-6 text-mortgage-dark placeholder:text-mortgage-brown focus:outline-none"
               />
             </div>
 
-            <div className="flex h-14 items-center rounded-xl bg-mortgage-cream-light px-4">
+            <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
                 type="email"
                 placeholder="Email"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
-                className="w-full bg-transparent text-base leading-6 text-mortgage-brown-light placeholder:text-mortgage-brown-light focus:outline-none"
+                className="w-full bg-transparent text-base leading-6 text-mortgage-dark placeholder:text-mortgage-brown focus:outline-none"
               />
             </div>
 
-            <div className="flex h-14 items-center rounded-xl bg-mortgage-cream-light px-4">
+            <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
                 type="tel"
                 placeholder="Phone Number"
@@ -142,11 +143,11 @@ export default function MortgageApplicationForm({
                 onChange={(e) =>
                   handleInputChange("phoneNumber", e.target.value)
                 }
-                className="w-full bg-transparent text-base leading-6 text-mortgage-brown-light placeholder:text-mortgage-brown-light focus:outline-none"
+                className="w-full bg-transparent text-base leading-6 text-mortgage-dark placeholder:text-mortgage-brown focus:outline-none"
               />
             </div>
 
-            <div className="flex h-14 items-center rounded-xl bg-mortgage-cream-light px-4">
+            <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
                 type="text"
                 placeholder="Social Security Number"
@@ -154,20 +155,20 @@ export default function MortgageApplicationForm({
                 onChange={(e) =>
                   handleInputChange("socialSecurityNumber", e.target.value)
                 }
-                className="w-full bg-transparent text-base leading-6 text-mortgage-brown-light placeholder:text-mortgage-brown-light focus:outline-none"
+                className="w-full bg-transparent text-base leading-6 text-mortgage-dark placeholder:text-mortgage-brown focus:outline-none"
               />
             </div>
           </div>
         </div>
 
         {/* Marital Details Section */}
-        <div className="px-4 py-6">
+        <div className="">
           <h2 className="text-lg font-bold text-mortgage-dark mb-4">
             Marital details
           </h2>
 
           <div className="space-y-3">
-            <div className="flex h-14 items-center rounded-xl bg-mortgage-cream-light px-4">
+            <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
                 type="text"
                 placeholder="Marriage Status"
@@ -175,11 +176,11 @@ export default function MortgageApplicationForm({
                 onChange={(e) =>
                   handleInputChange("marriageStatus", e.target.value)
                 }
-                className="w-full bg-transparent text-base leading-6 text-mortgage-brown-light placeholder:text-mortgage-brown-light focus:outline-none"
+                className="w-full bg-transparent text-base leading-6 text-mortgage-dark placeholder:text-mortgage-brown focus:outline-none"
               />
             </div>
 
-            <div className="flex h-14 items-center rounded-xl bg-mortgage-cream-light px-4">
+            <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
                 type="text"
                 placeholder="Name of the Spouse"
@@ -187,11 +188,11 @@ export default function MortgageApplicationForm({
                 onChange={(e) =>
                   handleInputChange("spouseName", e.target.value)
                 }
-                className="w-full bg-transparent text-base leading-6 text-mortgage-brown-light placeholder:text-mortgage-brown-light focus:outline-none"
+                className="w-full bg-transparent text-base leading-6 text-mortgage-dark placeholder:text-mortgage-brown focus:outline-none"
               />
             </div>
 
-            <div className="flex h-14 items-center rounded-xl bg-mortgage-cream-light px-4">
+            <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
                 type="text"
                 placeholder="Years of Marriage"
@@ -199,11 +200,11 @@ export default function MortgageApplicationForm({
                 onChange={(e) =>
                   handleInputChange("yearsOfMarriage", e.target.value)
                 }
-                className="w-full bg-transparent text-base leading-6 text-mortgage-brown-light placeholder:text-mortgage-brown-light focus:outline-none"
+                className="w-full bg-transparent text-base leading-6 text-mortgage-dark placeholder:text-mortgage-brown focus:outline-none"
               />
             </div>
 
-            <div className="flex h-14 items-center rounded-xl bg-mortgage-cream-light px-4">
+            <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
                 type="text"
                 placeholder="Names of the Children (if any)"
@@ -211,14 +212,14 @@ export default function MortgageApplicationForm({
                 onChange={(e) =>
                   handleInputChange("childrenNames", e.target.value)
                 }
-                className="w-full bg-transparent text-base leading-6 text-mortgage-brown-light placeholder:text-mortgage-brown-light focus:outline-none"
+                className="w-full bg-transparent text-base leading-6 text-mortgage-dark placeholder:text-mortgage-brown focus:outline-none"
               />
             </div>
           </div>
         </div>
 
         {/* Application Progress */}
-        <div className="px-4 py-4">
+        <div className="">
           <div className="mb-2">
             <span className="text-base text-mortgage-dark">
               Application Progress
@@ -236,30 +237,23 @@ export default function MortgageApplicationForm({
             {Math.round(progressPercentage)}%)
           </div>
         </div>
-
-        {/* Bottom spacing */}
-        <div className="h-24"></div>
       </div>
 
       {/* Bottom Actions */}
-      <div className="border-t border-mortgage-cream-light bg-white p-4">
-        <div className="flex gap-3">
+      <div className="border-t border-gray-100 p-4">
+        <div className="flex gap-2">
           <button
             onClick={handleBackToChat}
-            className="flex h-10 min-w-[84px] items-center justify-center rounded-2xl bg-mortgage-cream-light px-4"
+            className="px-4 h-10 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
           >
-            <span className="text-sm font-bold leading-[21px] text-mortgage-dark">
-              Chat
-            </span>
+            Chat
           </button>
 
           <button
             onClick={handleNext}
-            className="flex h-10 min-w-[84px] flex-1 items-center justify-center rounded-2xl bg-primary px-4"
+            className="flex-1 h-10 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
           >
-            <span className="text-sm font-bold leading-[21px] text-white">
-              Next
-            </span>
+            Next
           </button>
         </div>
       </div>

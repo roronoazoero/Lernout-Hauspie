@@ -15,10 +15,11 @@ interface MortgageCalculatorProps {
 }
 
 export default function MortgageCalculator({ onCalculate, onBack }: MortgageCalculatorProps) {
+  // Pre-populate with data from JSON
   const [inputs, setInputs] = useState<Record<string, string>>({
-    loanAmount: '',
-    interestRate: '',
-    loanTermYears: '',
+    loanAmount: '50333',
+    interestRate: '30.1',
+    loanTermYears: '4',
     downPayment: '',
     propertyPrice: '',
   });
@@ -31,13 +32,13 @@ export default function MortgageCalculator({ onCalculate, onBack }: MortgageCalc
   };
 
   const handleCalculate = () => {
-    // Provide reasonable defaults for demonstration
+    // Convert to numeric with applicant data as defaults
     const numericInputs: MortgageInputs = {
-      loanAmount: parseFloat(inputs.loanAmount) || 400000,
-      interestRate: parseFloat(inputs.interestRate) || 3.5,
-      loanTermYears: parseFloat(inputs.loanTermYears) || 30,
-      downPayment: parseFloat(inputs.downPayment) || 80000,
-      propertyPrice: parseFloat(inputs.propertyPrice) || 480000,
+      loanAmount: parseFloat(inputs.loanAmount) || 50333,
+      interestRate: parseFloat(inputs.interestRate) || 30.1,
+      loanTermYears: parseFloat(inputs.loanTermYears) || 4,
+      downPayment: parseFloat(inputs.downPayment) || 10000,
+      propertyPrice: parseFloat(inputs.propertyPrice) || 60333,
     };
 
     const errors = validateMortgageInputs(numericInputs);
@@ -52,110 +53,132 @@ export default function MortgageCalculator({ onCalculate, onBack }: MortgageCalc
   return (
     <div className="flex h-full w-full flex-col bg-white">
       {/* Header */}
-      <div className="flex items-center justify-between bg-white px-4 py-4 border-b border-gray-100">
+      <div className="flex items-center justify-between bg-white px-4 py-3 border-b border-gray-100">
         {onBack ? (
-          <button onClick={onBack} className="flex h-12 w-12 items-center justify-center">
+          <button onClick={onBack} className="flex h-10 w-10 items-center justify-center">
             <BackIcon className="h-6 w-6" />
           </button>
         ) : (
-          <div className="h-12 w-12" />
+          <div className="h-10 w-10" />
         )}
-        <h1 className="flex-1 pr-12 text-center text-lg font-bold leading-6 text-mortgage-dark">
+        <h1 className="flex-1 pr-10 text-center text-base font-bold leading-6 text-mortgage-dark">
           Mortgage Calculator
         </h1>
       </div>
 
       {/* Calculator Fields */}
-      <div className="flex flex-1 flex-col bg-white overflow-y-auto">
+      <div className="flex flex-1 flex-col bg-white overflow-y-auto px-4 space-y-6 py-4">
         {/* Loan Amount */}
-        <div className="flex max-w-full px-4 py-3">
+        <div className="flex max-w-full">
           <div className="flex min-w-[160px] flex-1 flex-col">
-            <div className="flex h-14 items-center rounded-lg bg-mortgage-cream px-4">
+            <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
                 type="text"
                 placeholder="Loan Amount"
                 value={inputs.loanAmount}
                 onChange={(e) => handleInputChange('loanAmount', e.target.value)}
-                className="w-full bg-transparent text-base leading-6 text-mortgage-brown placeholder:text-mortgage-brown focus:outline-none"
+                className="w-full bg-transparent text-base leading-6 text-mortgage-dark placeholder:text-mortgage-brown focus:outline-none"
               />
             </div>
           </div>
         </div>
 
         {/* Interest Rate */}
-        <div className="flex max-w-full px-4 py-3">
+        <div className="flex max-w-full">
           <div className="flex min-w-[160px] flex-1 flex-col">
-            <div className="flex h-14 items-center rounded-lg bg-mortgage-cream px-4">
+            <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
                 type="text"
                 placeholder="Interest Rate (%)"
                 value={inputs.interestRate}
                 onChange={(e) => handleInputChange('interestRate', e.target.value)}
-                className="w-full bg-transparent text-base leading-6 text-mortgage-brown placeholder:text-mortgage-brown focus:outline-none"
+                className="w-full bg-transparent text-base leading-6 text-mortgage-dark placeholder:text-mortgage-brown focus:outline-none"
               />
             </div>
           </div>
         </div>
 
         {/* Loan Term */}
-        <div className="flex max-w-full px-4 py-3">
+        <div className="flex max-w-full">
           <div className="flex min-w-[160px] flex-1 flex-col">
-            <div className="flex h-14 items-center rounded-lg bg-mortgage-cream px-4">
+            <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
                 type="text"
                 placeholder="Loan Term (Years)"
                 value={inputs.loanTermYears}
                 onChange={(e) => handleInputChange('loanTermYears', e.target.value)}
-                className="w-full bg-transparent text-base leading-6 text-mortgage-brown placeholder:text-mortgage-brown focus:outline-none"
+                className="w-full bg-transparent text-base leading-6 text-mortgage-dark placeholder:text-mortgage-brown focus:outline-none"
               />
             </div>
           </div>
         </div>
 
         {/* Down Payment */}
-        <div className="flex max-w-full px-4 py-3">
+        <div className="flex max-w-full">
           <div className="flex min-w-[160px] flex-1 flex-col">
-            <div className="flex h-14 items-center rounded-lg bg-mortgage-cream px-4">
+            <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
                 type="text"
                 placeholder="Down Payment"
                 value={inputs.downPayment}
                 onChange={(e) => handleInputChange('downPayment', e.target.value)}
-                className="w-full bg-transparent text-base leading-6 text-mortgage-brown placeholder:text-mortgage-brown focus:outline-none"
+                className="w-full bg-transparent text-base leading-6 text-mortgage-dark placeholder:text-mortgage-brown focus:outline-none"
               />
             </div>
           </div>
         </div>
 
         {/* Housing Link or Price */}
-        <div className="flex max-w-full px-4 py-3">
+        <div className="flex max-w-full">
           <div className="flex min-w-[160px] flex-1 flex-col">
-            <div className="flex h-14 items-center rounded-lg bg-mortgage-cream px-4">
+            <div className="flex h-12 items-center rounded-xl bg-mortgage-cream px-4">
               <input
                 type="text"
                 placeholder="Housing link OR price"
                 value={inputs.propertyPrice}
                 onChange={(e) => handleInputChange('propertyPrice', e.target.value)}
-                className="w-full bg-transparent text-base leading-6 text-mortgage-brown placeholder:text-mortgage-brown focus:outline-none"
+                className="w-full bg-transparent text-base leading-6 text-mortgage-dark placeholder:text-mortgage-brown focus:outline-none"
               />
             </div>
           </div>
         </div>
 
         {/* Calculate Button */}
-        <div className="flex px-4 py-6">
+        <div className="flex">
           <button
             onClick={handleCalculate}
-            className="flex h-10 min-w-[84px] max-w-full flex-1 items-center justify-center rounded-lg bg-primary px-4"
+            className="flex h-10 min-w-[84px] max-w-full flex-1 items-center justify-center rounded-xl bg-primary px-4 hover:bg-primary/90 transition-colors"
           >
-            <span className="overflow-hidden text-ellipsis text-sm font-bold leading-[21px] text-mortgage-dark">
+            <span className="overflow-hidden text-ellipsis text-sm font-medium leading-[21px] text-white">
               Calculate
             </span>
           </button>
         </div>
 
-        {/* Extra Padding */}
-        <div className="h-20 bg-white" />
+        {/* Applicant Info Summary */}
+        <div className="border-t border-gray-100 pt-6">
+          <h3 className="text-lg font-bold text-mortgage-dark mb-4">
+            Pre-filled from your profile
+          </h3>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-sm text-mortgage-brown">Current Loan Amount:</span>
+              <span className="text-sm text-mortgage-dark font-medium">$50,333</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-mortgage-brown">Current Interest Rate:</span>
+              <span className="text-sm text-mortgage-dark font-medium">30.1%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-mortgage-brown">Loan Duration:</span>
+              <span className="text-sm text-mortgage-dark font-medium">4 years</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-mortgage-brown">Monthly Payment:</span>
+              <span className="text-sm text-mortgage-dark font-medium">$1,815</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -70,6 +70,14 @@ export default function Index() {
     setChatView("choice");
   };
 
+  const handleCancelLogin = () => {
+    // Navigate back to start page
+    setCalculatorView("start");
+    setActiveTab("calculator");
+    setResults(null);
+    setSelectedBank("");
+  };
+
   const handleBackToBankSelection = () => {
     setCalculatorView("bankSelection");
     setActiveTab("calculator");
@@ -82,7 +90,10 @@ export default function Index() {
 
   const handleApplicationSubmit = (_data: any) => setChatView("summary");
   const handleSummaryBack = () => setChatView("application");
-  const handleSummarySubmit = () => setChatView("documents");
+  
+  // This is the key change: handleSummarySubmit now goes directly to success
+  const handleSummarySubmit = () => setChatView("success");
+  
   const handleSummaryEdit = (_section: string) => setChatView("edit");
 
   const handleDocsBack = () => setChatView("summary");
@@ -118,7 +129,7 @@ export default function Index() {
         <BankSelection
           mortgageResults={results}
           onBankSelect={handleBankSelect}
-          onBack={() => setCalculatorView("results")}
+          onCancel={handleCancelLogin} // Updated to go to start page
         />
       );
     }
@@ -146,7 +157,7 @@ export default function Index() {
       return (
         <ApplicationSummary
           onBack={handleSummaryBack}
-          onSubmit={handleSummarySubmit}
+          onSubmit={handleSummarySubmit} // This now goes directly to success
           onEdit={handleSummaryEdit}
         />
       );
@@ -159,7 +170,7 @@ export default function Index() {
     if (chatView === "success") {
       return (
         <ApplicationSuccess
-          onBack={handleSuccessBack}
+          onBack={handleSummaryBack} // Updated to go back to summary
           onCheckStatus={handleCheckStatus}
         />
       );
