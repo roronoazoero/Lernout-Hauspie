@@ -157,8 +157,8 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI app
 app = FastAPI(
-    title="MedFi Chat API",
-    description="FastAPI backend for MedFi LangFlow integration",
+    title="Mortgage Chat API",
+    description="FastAPI backend for Mortgage Chat LangFlow integration",
     version="1.0.0",
     lifespan=lifespan
 )
